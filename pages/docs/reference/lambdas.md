@@ -262,19 +262,22 @@ val sum: (Int, Int) -> Int = { x: Int, y: Int -> x + y }
 
 A lambda expression is always surrounded by curly braces,
 parameter declarations in the full syntactic form go inside curly braces and have optional type annotations,
-the body goes after an `->` sign. If the inferred return type of the lambda is not `Unit`, the last (or possibly single) expression inside the lambda body is treated as the return value.
+the body goes after an `->` sign. If the inferred return type of the lambda is not `Unit`, the last (or possibly single)
+expression inside the lambda body is treated as the return value.
 
 If we leave all the optional annotations out, what's left looks like this:
 
 <div class="sample" markdown="1" theme="idea" data-highlight-only>
 
 ```kotlin
-val sum = { x, y -> x + y }
+val sum = { x: Int, y: Int -> x + y }
 ```
 
 </div>
 
-### Passing a lambda to the last parameter
+{:#passing-a-lambda-to-the-last-parameter}
+
+### Passing trailing lambdas
 
 In Kotlin, there is a convention: if the last parameter of a function is a function, then a lambda expression 
 passed as the corresponding argument can be placed outside the parentheses:
@@ -338,7 +341,7 @@ ints.filter {
 </div>
 
 This convention, along with [passing a lambda expression outside parentheses](#passing-a-lambda-to-the-last-parameter), allows for 
-[LINQ-style](http://msdn.microsoft.com/en-us/library/bb308959.aspx) code:
+[LINQ-style](https://docs.microsoft.com/en-us/previous-versions/dotnet/articles/bb308959(v=msdn.10)) code:
 
 <div class="sample" markdown="1" theme="idea" data-highlight-only>
 

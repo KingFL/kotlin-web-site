@@ -6,7 +6,7 @@
 
 .global-header {
   @include clearfix;
-  background-color: #393939;
+  background-color: #27282c;
   background-size: cover;
   min-width: 960px;
 
@@ -15,7 +15,18 @@
   }
 
   .banner-main {
-    background-color: #fff;
+    background-color: #e4e4e4;
+  }
+
+  .banner-promo {
+    text-align: center;
+    font-size: 0;
+    line-height: 0;
+  }
+
+  .banner-video-promo__player {
+    width: 978px;
+    height: 550px;
   }
 
   .banner-header {
@@ -36,7 +47,7 @@
     flex-direction: row;
     margin-top: $unit;
     height: 314px;
-    background: url('images/kotlinlang_banner.png') no-repeat;
+    /* background: url('assets/images/index/banners/kotlinconf_2020.png') no-repeat; */
     background-size: contain;
     text-indent: -9999px;
 
@@ -69,7 +80,6 @@
 
 .page_index .global-header {
   box-sizing: border-box;
-  height: 650px;
 
   .get-kotlin-button {
     @extend %button_call-to-action;
@@ -90,10 +100,9 @@
 
 .global-header-logo {
   @include transition(0.3s all);
-  position: relative;
-  top: 12px;
-  float: left;
-  width: 103px;
+  display: inline-block;
+  margin-top: 12px;
+  min-width: 103px;
   height: 22px;
   background: url('images/logos-sprite.png') no-repeat;
   font-size: 0;
@@ -103,4 +112,21 @@
     background-image: url('images/logos-sprite@2x.png');
     background-size: 200px 100px;
   }
+}
+
+.global-header-logo__version,
+.global-header-logo__version:any-link {
+  display: inline-block;
+  text-decoration: none;
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.global-header-logo__version:hover,
+.global-header-logo__version:active {
+  color: #fff;
+  text-decoration: underline;
 }

@@ -217,7 +217,8 @@ value?.let {
 ```kotlin
 val value = ...
 
-val mapped = value?.let { transformValue(it) } ?: defaultValueIfValueIsNull
+val mapped = value?.let { transformValue(it) } ?: defaultValue 
+// defaultValue is returned if the value or the transform result is null.
 ```
 </div>
 
@@ -324,7 +325,7 @@ class Turtle {
 val myTurtle = Turtle()
 with(myTurtle) { //draw a 100 pix square
     penDown()
-    for(i in 1..4) {
+    for (i in 1..4) {
         forward(100.0)
         turn(90.0)
     }
@@ -333,6 +334,18 @@ with(myTurtle) { //draw a 100 pix square
 ```
 </div>
 
+### Configuring properties of an object (`apply`)
+<div class="sample" markdown="1" theme="idea" data-highlight-only>
+```kotlin
+val myRectangle = Rectangle().apply {
+    length = 4
+    breadth = 5
+    color = 0xFAFAFA
+}
+```
+</div>
+
+This is useful for configuring properties that aren't present in the object constructor.
 
 ### Java 7's try with resources
 
@@ -380,4 +393,15 @@ var b = 2
 a = b.also { b = a }
 ```
 </div>
+
+### TODO(): Marking code as incomplete
+ 
+Kotlin's standard library has a `TODO()` function that will always throw a `NotImplementedError`.
+Its return type is `Nothing` so it can be used regardless of expected type.
+There's also an overload that accepts a reason parameter:
+```kotlin
+fun calcTaxes(): BigDecimal = TODO("Waiting for feedback from accounting")
+```
+
+IntelliJ IDEA's kotlin plugin understands the semantics of `TODO()` and automatically adds a code pointer in the TODO toolwindow. 
 

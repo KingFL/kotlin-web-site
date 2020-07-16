@@ -139,7 +139,7 @@ The class can also declare **secondary constructors**, which are prefixed with *
 
 ```kotlin
 class Person {
-    var children: MutableList<Person> = mutableListOf<Person>();
+    var children: MutableList<Person> = mutableListOf<>()
     constructor(parent: Person) {
         parent.children.add(this)
     }
@@ -156,7 +156,7 @@ is done using the *this*{: .keyword } keyword:
 
 ```kotlin
 class Person(val name: String) {
-    var children: MutableList<Person> = mutableListOf<Person>();
+    var children: MutableList<Person> = mutableListOf<>()
     constructor(name: String, parent: Person) : this(name) {
         parent.children.add(this)
     }
@@ -166,7 +166,7 @@ class Person(val name: String) {
 </div>
 
 Note that code in initializer blocks effectively becomes part of the primary constructor. Delegation to the primary
-constructor happens as the first statement of a secondary constructor, so the code in all initializer blocks is executed
+constructor happens as the first statement of a secondary constructor, so the code in all initializer blocks and property initializers is executed
 before the secondary constructor body. Even if the class has no primary constructor, the delegation still happens
 implicitly, and the initializer blocks are still executed:
 
@@ -260,6 +260,20 @@ class Example // Implicitly inherits from Any
 </div>
 
 `Any` has three methods: `equals()`, `hashCode()` and `toString()`. Thus, they are defined for all Kotlin classes. 
+
+By default, Kotlin classes are final: they can’t be inherited.
+To make a class inheritable, mark it with the `open` keyword.
+
+<div class="sample" markdown="1" theme="idea" data-highlight-only>
+
+```kotlin
+open class Base //Class is open for inheritance
+
+```
+
+</div>
+
+ 
 
 To declare an explicit supertype, place the type after a colon in the class header:
 
@@ -415,19 +429,19 @@ Code in a derived class can call its superclass functions and property accessors
 <div class="sample" markdown="1" theme="idea" data-highlight-only>
 
 ```kotlin
-    open class Rectangle {
-        open fun draw() { println("Drawing a rectangle") }
-        val borderColor: String get() = "black"
+open class Rectangle {
+    open fun draw() { println("Drawing a rectangle") }
+    val borderColor: String get() = "black"
+}
+
+class FilledRectangle : Rectangle() {
+    override fun draw() {
+        super.draw()
+        println("Filling the rectangle")
     }
 
-    class FilledRectangle : Rectangle() {
-        override fun draw() {
-            super.draw()
-            println("Filling the rectangle")
-        }
-
-        val fillColor: String get() = super.borderColor
-    }
+    val fillColor: String get() = super.borderColor
+}
 ```
 
 </div>
@@ -456,7 +470,7 @@ class FilledRectangle: Rectangle() {
 
 ### Overriding rules
 
-In Kotlin, implementation inheritance is regulated by the following rule: if a class inherits many implementations of the same member from its immediate superclasses,
+In Kotlin, implementation inheritance is regulated by the following rule: if a class inherits multiple implementations of the same member from its immediate superclasses,
 it must override this member and provide its own implementation (perhaps, using one of the inherited ones).
 To denote the supertype from which the inherited implementation is taken, we use *super*{: .keyword } qualified by the supertype name in angle brackets, e.g. `super<Base>`:
 
@@ -502,7 +516,7 @@ open class Polygon {
 }
 
 abstract class Rectangle : Polygon() {
-    override abstract fun draw()
+    abstract override fun draw()
 }
 ```
 
@@ -515,4 +529,4 @@ of a class (for example, a factory method), you can write it as a member of an [
 inside that class.
 
 Even more specifically, if you declare a [companion object](object-declarations.html#companion-objects) inside your class,
-you'll be able to call its members using only the class name as a qualifier.
+you can access its members using only the class name as a qualifier.

@@ -9,7 +9,7 @@ title: "Null Safety"
 
 ## Nullable types and Non-Null Types
 
-Kotlin's type system is aimed at eliminating the danger of null references from code, also known as the [The Billion Dollar Mistake](http://en.wikipedia.org/wiki/Tony_Hoare#Apologies_and_retractions).
+Kotlin's type system is aimed at eliminating the danger of null references from code, also known as the [The Billion Dollar Mistake](https://en.wikipedia.org/wiki/Tony_Hoare#Apologies_and_retractions).
 
 One of the most common pitfalls in many programming languages, including Java, is that accessing a member of a null reference will result in a null reference exception. In Java this would be the equivalent of a `NullPointerException` or NPE for short.
 
@@ -32,7 +32,7 @@ For example, a regular variable of type `String` can not hold *null*{: .keyword 
 ```kotlin
 fun main() {
 //sampleStart
-    var a: String = "abc"
+    var a: String = "abc" // Regular initialization means non-null by default
     a = null // compilation error
 //sampleEnd
 }
@@ -45,7 +45,7 @@ To allow nulls, we can declare a variable as nullable string, written `String?`:
 ```kotlin
 fun main() {
 //sampleStart
-    var b: String? = "abc"
+    var b: String? = "abc" // can be set null
     b = null // ok
     print(b)
 //sampleEnd
@@ -160,7 +160,7 @@ person?.department?.head = managersPool.getManager()
 
 ## Elvis Operator
 
-When we have a nullable reference `r`, we can say "if `r` is not null, use it, otherwise use some non-null value `x`":
+When we have a nullable reference `b`, we can say "if `b` is not null, use it, otherwise use some non-null value":
 
 <div class="sample" markdown="1" theme="idea" data-highlight-only>
 ```kotlin

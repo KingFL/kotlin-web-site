@@ -66,7 +66,7 @@ internal actual fun writeLogMessage(message: String, logLevel: LogLevel) {
 
 </div>
 
-In the JavaScript world, a completely different set of APIs is availiable, 
+In the JavaScript world, a completely different set of APIs is available, 
 so one could instead implement logging to the console:
 
 <div class="sample" markdown="1" theme="idea" data-highlight-only>
@@ -102,7 +102,9 @@ Sharing code between mobile platforms is one of the major Kotlin Multiplatform u
 possible to build mobile applications with parts of the code, such as business logic, connectivity, 
 and more, shared between Android and iOS.
 
-See: [Multiplatform Project: iOS and Android](/docs/tutorials/native/mpp-ios-android.html)
+See: 
+- [Mobile Multiplatform features, case studies and examples](https://www.jetbrains.com/lp/mobilecrossplatform/)
+- [Setting up a Mobile Multiplatform Project](/docs/tutorials/native/mpp-ios-android.html)
 
 ### Client — Server
 

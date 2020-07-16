@@ -15,7 +15,7 @@ Collection operations are declared in the standard library in two ways: [member 
 
 Member functions define operations that are essential for a collection type. For example, [`Collection`](/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html) contains the function [`isEmpty()`](/api/latest/jvm/stdlib/kotlin.collections/-collection/is-empty.html) for checking its emptiness; [`List`](/api/latest/jvm/stdlib/kotlin.collections/-list/index.html) contains [`get()`](/api/latest/jvm/stdlib/kotlin.collections/-list/get.html) for index access to elements, and so on.
 
-When you create own implementations of collection interfaces, you must implement their member functions.
+When you create your own implementations of collection interfaces, you must implement their member functions.
 To make the creation of new implementations easier, use the skeletal implementations of collection interfaces from the standard library: [`AbstractCollection`](/api/latest/jvm/stdlib/kotlin.collections/-abstract-collection/index.html), [`AbstractList`](/api/latest/jvm/stdlib/kotlin.collections/-abstract-list/index.html), [`AbstractSet`](/api/latest/jvm/stdlib/kotlin.collections/-abstract-set/index.html), [`AbstractMap`](/api/latest/jvm/stdlib/kotlin.collections/-abstract-map/index.html), and their mutable counterparts.
 
 Other collection operations are declared as extension functions. These are filtering, transformation, ordering, and other collection processing functions. 
@@ -96,7 +96,7 @@ Functions with destination are available for filtering, association, grouping, f
 For mutable collections, there are also _write operations_ that change the collection state. Such operations include adding, removing, and updating elements. Write operations are listed in the [Write operations](collection-write.html) and corresponding sections of [List specific operations](list-operations.html#list-write-operations) and [Map specific operations](map-operations.html#map-write-operations).
 
 For certain operations, there are pairs of functions for performing the same operation: one applies the operation in-place and the other returns the result as a separate collection.
-For example, [`sort()`](/api/latest/jvm/stdlib/kotlin.collections/sort.html) sorts a mutable collection in-place, so it's state changes; [`sorted()`](/api/latest/jvm/stdlib/kotlin.collections/sorted.html) creates a new collection that contains the same elements in the sorted order.
+For example, [`sort()`](/api/latest/jvm/stdlib/kotlin.collections/sort.html) sorts a mutable collection in-place, so its state changes; [`sorted()`](/api/latest/jvm/stdlib/kotlin.collections/sorted.html) creates a new collection that contains the same elements in the sorted order.
 
 <div class="sample" markdown="1" theme="idea" data-min-compiler-version="1.3">
 

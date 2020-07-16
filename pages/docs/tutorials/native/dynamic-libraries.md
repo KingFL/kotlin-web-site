@@ -114,12 +114,12 @@ header file name prefix. It is also prefixes all declarations in the
 header file.
 
 Now we are ready to
-[open the project in IntelliJ IDEA](basic-kotlin-native-app.html#open-in-ide)
+[open the project in IntelliJ IDEA](/docs/tutorials/native/using-intellij-idea.html)
 and to see how to fix the example project. While doing this,
 we'll examine how C functions are mapped into Kotlin/Native declarations.
 
 Let's run the `linkNative` Gradle task to build the library 
-[in the IDE](basic-kotlin-native-app.html#run-in-ide) 
+in the IDE
 or by calling the following console command:
 [[include pages-includes/docs/tutorials/native/linkNative.md]]
 
@@ -427,7 +427,7 @@ shortcut to open the console in the start menu. It comes with a Microsoft Visual
 package.  
 
 On Windows, Dynamic libraries are included either via a generated static library wrapper
-or with manual code, which deals with the [LoadLibrary](https://msdn.microsoft.com/en-us/library/windows/desktop/ms684175.aspx)
+or with manual code, which deals with the [LoadLibrary](https://docs.microsoft.com/en-gb/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibrarya)
 or similar Win32API functions. We will follow the first option and generate the static wrapper library
 for the `libnative.dll` on our own.
  

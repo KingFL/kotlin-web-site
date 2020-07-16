@@ -124,8 +124,9 @@ you can use `LazyThreadSafetyMode.NONE`: it doesn't incur any thread-safety guar
 
 ### Observable
 
-[`Delegates.observable()`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.properties/-delegates/observable.html) takes two arguments: the initial value and a handler for modifications.
-The handler gets called every time we assign to the property (_after_ the assignment has been performed). It has three
+[`Delegates.observable()`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.properties/-delegates/observable.html)
+takes two arguments: the initial value and a handler for modifications.
+The handler is called every time we assign to the property (_after_ the assignment has been performed). It has three
 parameters: a property being assigned to, the old value and the new one:
 
 <div class="sample" markdown="1" theme="idea">
@@ -149,7 +150,7 @@ fun main() {
 
 </div>
 
-If you want to be able to intercept an assignment and "veto" it, use [`vetoable()`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.properties/-delegates/vetoable.html) instead of `observable()`.
+If you want to intercept assignments and "veto" them, use [`vetoable()`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.properties/-delegates/vetoable.html) instead of `observable()`.
 The handler passed to the `vetoable` is called _before_ the assignment of a new property value has been performed.
 
 ## Storing Properties in a Map
@@ -245,19 +246,61 @@ If `someCondition` fails, the variable won't be computed at all.
 
 Here we summarize requirements to delegate objects. 
 
-For a **read-only** property (i.e. a *val*{:.keyword}), a delegate has to provide a function named `getValue` that takes the following parameters:
+For a **read-only** property (*val*{:.keyword}), a delegate has to provide an operator function `getValue()` with the following parameters:
 
-* `thisRef` --- must be the same or a supertype of the _property owner_ (for extension properties --- the type being extended);
+* `thisRef` --- must be the same or a supertype of the _property owner_ (for extension properties --- the type being extended).
 * `property` --- must be of type `KProperty<*>` or its supertype.
  
-this function must return the same type as property (or its subtype).
+`getValue()` must return the same type as the property (or its subtype).
 
-For a **mutable** property (a *var*{:.keyword}), a delegate has to _additionally_ provide a function named `setValue` that takes the following parameters:
+<div class="sample" markdown="1" theme="idea" data-highlight-only>
+
+```kotlin
+class Resource
+
+class Owner {
+    val valResource: Resource by ResourceDelegate()
+}
+
+class ResourceDelegate {
+    operator fun getValue(thisRef: Owner, property: KProperty<*>): Resource {
+        return Resource()
+    }
+}
+```
+
+</div>
+
+For a **mutable** property (*var*{:.keyword}), a delegate has to additionally provide an operator function `setValue()` 
+with the following parameters:
+
+* `thisRef` --- must be the same or a supertype of the _property owner_ (for extension properties --- the type being extended).
+* `property` --- must be of type `KProperty<*>` or its supertype.
+* `value` --- must be of the same type as the property (or its supertype).
  
-* `thisRef` --- same as for `getValue()`;
-* `property` --- same as for `getValue()`;
-* `new value` --- must be of the same type as the property or its subtype.
- 
+<div class="sample" markdown="1" theme="idea" data-highlight-only>
+
+```kotlin
+class Resource
+
+class Owner {
+    var varResource: Resource by ResourceDelegate()
+}
+
+class ResourceDelegate(private var resource: Resource = Resource()) {
+    operator fun getValue(thisRef: Owner, property: KProperty<*>): Resource {
+        return resource
+    }
+    operator fun setValue(thisRef: Owner, property: KProperty<*>, value: Any?) {
+        if (value is Resource) {
+            resource = value
+        }
+    }
+}
+```
+
+</div>
+
 `getValue()` and/or `setValue()` functions may be provided either as member functions of the delegate class or extension functions.
 The latter is handy when you need to delegate property to an object which doesn't originally provide these functions.
 Both of the functions need to be marked with the `operator` keyword.

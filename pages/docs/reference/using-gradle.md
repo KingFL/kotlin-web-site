@@ -12,7 +12,7 @@ Those actions may also be performed automatically in IntelliJ IDEA by invoking _
 ## Plugin and Versions
 
 Apply the Kotlin Gradle plugin by using [the Gradle plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#sec:plugins_block).
-The Kotlin Gradle plugin {{ site.data.releases.latest.version }} works with Gradle 4.1 and later.
+The Kotlin Gradle plugin {{ site.data.releases.latest.version }} works with Gradle 4.9 and later.
 
 <div class="multi-language-sample" data-lang="groovy">
 <div class="sample" markdown="1" theme="idea" mode='groovy'>
@@ -70,7 +70,7 @@ plugins {
 ```kotlin
 buildscript {
     repositories {
-            mavenCentral()
+        mavenCentral()
     }
         
     dependencies {
@@ -167,16 +167,13 @@ sourceSets {
 <div class="sample" markdown="1" mode="kotlin" theme="idea" data-lang="kotlin" data-highlight-only>
 
 ```kotlin
-sourceSets["main"].java.srcDir("src/main/myJava")
-sourceSets["main"].withConvention(KotlinSourceSet::class) {    
-    kotlin.srcDir("src/main/myKotlin") 
+sourceSets.main {
+    java.srcDirs("src/main/myJava", "src/main/myKotlin")
 }
 ```
 
 </div>
 </div>
-
-With Gradle Kotlin DSL, configure source sets with `java.sourceSets { ... }` instead.
 
 ## Targeting JavaScript
 
@@ -213,8 +210,10 @@ targeting the JVM, if not using the default convention, you should specify the s
 <div class="sample" markdown="1" mode="groovy" theme="idea" data-lang="groovy">
 
 ```groovy
-sourceSets {
-    main.kotlin.srcDirs += 'src/main/myKotlin'
+kotlin {
+    sourceSets {
+        main.kotlin.srcDirs += 'src/main/myKotlin'
+    }
 }
 ```
 
@@ -225,37 +224,9 @@ sourceSets {
 <div class="sample" markdown="1" mode="kotlin" theme="idea" data-lang="kotlin" data-highlight-only>
 
 ```kotlin
-sourceSets["main"].withConvention(KotlinSourceSet::class) {    
-    kotlin.srcDir("src/main/myKotlin") 
-}
-```
-
-</div>
-</div>
-
-In addition to the output JavaScript file, the plugin by default creates an additional JS file with binary descriptors.
-This file is required if you're building a reusable library that other Kotlin modules can depend on, and should be distributed together with the result of translation.
-The generation is controlled by the  `kotlinOptions.metaInfo` option:
-
-<div class="multi-language-sample" data-lang="groovy">
-<div class="sample" markdown="1" mode="groovy" theme="idea" data-lang="groovy">
-
-```groovy
-compileKotlin2Js {
-    kotlinOptions.metaInfo = true
-}
-```
-
-</div>
-</div>
-
-<div class="multi-language-sample" data-lang="kotlin">
-<div class="sample" markdown="1" mode="kotlin" theme="idea" data-lang="kotlin" data-highlight-only>
-
-```kotlin
-tasks {
-    "compileKotlin2Js"(Kotlin2JsCompile::class)  {
-        kotlinOptions.metaInfo = true
+kotlin {
+    sourceSets["main"].apply {    
+        kotlin.srcDir("src/main/myKotlin") 
     }
 }
 ```
@@ -305,7 +276,7 @@ buildscript {
 }
 plugins {
     id("com.android.application")
-    id("kotlin-android")
+    kotlin("android")
 }
 ```
 
@@ -572,7 +543,7 @@ It is also possible to configure all Kotlin compilation tasks in the project:
 <div class="sample" markdown="1" mode="groovy" theme="idea" data-lang="groovy">
 
 ```groovy
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions { ... }
 }
 ```
@@ -586,7 +557,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 ```kotlin
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-tasks.withType<KotlinCompile> {
+tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions.suppressWarnings = true
 }
 ```
@@ -595,7 +566,6 @@ tasks.withType<KotlinCompile> {
 </div>
 
 The complete list of options for the Gradle tasks is the following:
-
 ### Attributes Common for JVM, JS, and JS DCE
 
 | Name | Description | Possible values |Default value |
@@ -609,36 +579,35 @@ The complete list of options for the Gradle tasks is the following:
 
 | Name | Description | Possible values |Default value |
 |------|-------------|-----------------|--------------|
-| `apiVersion` | Allow to use declarations only from the specified version of bundled libraries | "1.0", "1.1", "1.2", "1.3", "1.4 (EXPERIMENTAL)" |  |
-| `languageVersion` | Provide source compatibility with specified language version | "1.0", "1.1", "1.2", "1.3", "1.4 (EXPERIMENTAL)" |  |
+| `apiVersion` | Allow using declarations only from the specified version of bundled libraries | "1.0", "1.1", "1.2", "1.3", "1.4 (EXPERIMENTAL)" |  |
+| `languageVersion` | Provide source compatibility with the specified version of Kotlin | "1.0", "1.1", "1.2", "1.3", "1.4 (EXPERIMENTAL)" |  |
 
 ### Attributes Specific for JVM
 
 | Name | Description | Possible values |Default value |
 |------|-------------|-----------------|--------------|
 | `javaParameters` | Generate metadata for Java 1.8 reflection on method parameters |  | false |
-| `jdkHome` | Path to JDK home directory to include into classpath, if differs from default JAVA_HOME |  |  |
-| `jvmTarget` | Target version of the generated JVM bytecode (1.6, 1.8, 9, 10, 11 or 12), default is 1.6 | "1.6", "1.8", "9", "10", "11", "12" | "1.6" |
-| `noJdk` | Don't include Java runtime into classpath |  | false |
-| `noReflect` | Don't include Kotlin reflection implementation into classpath |  | true |
-| `noStdlib` | Don't include Kotlin runtime into classpath |  | true |
+| `jdkHome` | Include a custom JDK from the specified location into the classpath instead of the default JAVA_HOME |  |  |
+| `jvmTarget` | Target version of the generated JVM bytecode (1.6, 1.8, 9, 10, 11, 12 or 13), default is 1.6 | "1.6", "1.8", "9", "10", "11", "12", "13"| "1.6" |
+| `noJdk` | Don't automatically include the Java runtime into the classpath |  | false |
+| `noReflect` | Don't automatically include Kotlin reflection into the classpath |  | true |
+| `noStdlib` | Don't automatically include the Kotlin/JVM stdlib and Kotlin reflection into the classpath |  | true |
 
 ### Attributes Specific for JS
 
 | Name | Description | Possible values |Default value |
 |------|-------------|-----------------|--------------|
 | `friendModulesDisabled` | Disable internal declaration export |  | false |
-| `main` | Whether a main function should be called | "call", "noCall" | "call" |
+| `main` | Define whether the `main` function should be called upon execution | "call", "noCall" | "call" |
 | `metaInfo` | Generate .meta.js and .kjsm files with metadata. Use to create a library |  | true |
-| `moduleKind` | Kind of a module generated by compiler | "plain", "amd", "commonjs", "umd" | "plain" |
-| `noStdlib` | Don't use bundled Kotlin stdlib |  | true |
-| `outputFile` | Output file path |  |  |
+| `moduleKind` | The kind of JS module generated by the compiler | "plain", "amd", "commonjs", "umd" | "plain" |
+| `noStdlib` | Don't automatically include the default Kotlin/JS stdlib into compilation dependencies |  | true |
+| `outputFile` | Destination *.js file for the compilation result |  |  |
 | `sourceMap` | Generate source map |  | false |
 | `sourceMapEmbedSources` | Embed source files into source map | "never", "always", "inlining" |  |
-| `sourceMapPrefix` | Prefix for paths in a source map |  |  |
+| `sourceMapPrefix` | Add the specified prefix to paths in the source map |  |  |
 | `target` | Generate JS files for specific ECMA version | "v5" | "v5" |
 | `typedArrays` | Translate primitive arrays to JS typed arrays |  | true |
-
 
 ## Generating Documentation
 

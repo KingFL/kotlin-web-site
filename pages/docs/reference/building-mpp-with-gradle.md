@@ -28,10 +28,13 @@ those are configured and built using Gradle.
 * [Default Project Layout](#default-project-layout)
 * [Running Tests](#running-tests)
 * [Publishing a Multiplatform Library](#publishing-a-multiplatform-library)
+    * [Metadata publishing](#metadata-publishing)
+    * [Disambiguating targets](#disambiguating-targets)
 * [Java Support in JVM Targets](#java-support-in-jvm-targets)
 * [Android Support](#android-support)
     * [Publishing Android libraries](#publishing-android-libraries)
 * [Using Kotlin/Native Targets](#using-kotlinnative-targets)
+    * [Target shortcuts](#target-shortcuts)
     * [Building final native binaries](#building-final-native-binaries)
 
 ## Project Structure
@@ -397,7 +400,9 @@ following target platforms:
   
     * `androidNativeArm32` and `androidNativeArm64` for Android NDK;
     * `iosArm32`, `iosArm64`, `iosX64` for iOS;
-    * `linuxArm32Hfp`, `linuxMips32`, `linuxMipsel32`, `linuxX64` for Linux;
+    * `watchosArm32`, `watchosArm64`, `watchosX86` for watchOS;
+    * `tvosArm64`, `tvosX64` for tvOS;
+    * `linuxArm64`, `linuxArm32Hfp`, `linuxMips32`, `linuxMipsel32`, `linuxX64` for Linux;
     * `macosX64` for MacOS;
     * `mingwX64` and `mingwX86` for Windows;
     * `wasm32` for WebAssembly.
@@ -477,10 +482,9 @@ kotlin {
 </div>
 </div>
 
-Each compilation is accompanied by a default [source set](#configuring-source-sets), which is created automatically 
-and should be used for sources and dependencies that are specific to that compilation. The default source set for a 
-compilation `foo` of a target `bar` has the name `barFoo`. It can also be accessed from a compilation using 
-`defaultSourceSet`:
+Each compilation is accompanied by a default [source set](#configuring-source-sets) that stores sources and dependencies 
+specific to that compilation. The default source set for a compilation `foo` of a target `bar` has the name `barFoo`.
+It can also be accessed from a compilation using `defaultSourceSet`:
 
 <div class="multi-language-sample" data-lang="groovy">
 <div class="sample" markdown="1" theme="idea" mode='groovy'>
@@ -671,6 +675,15 @@ common code shared between the platforms or platform-specific code.
 
 Each source set has a default source directory for Kotlin sources: `src/<source set name>/kotlin`. To add Kotlin source 
 directories and resources to a source set, use its `kotlin` and `resources` `SourceDirectorySet`s:
+
+By default, the files of a source set are stored in the following directories:
+
+* source files: `src/<source set name>/kotlin`
+* resources files: `src/<source set name>/resources`
+
+You should create these directories manually. 
+
+To add custom Kotlin source directories and resources to a source set, use its `kotlin` and `resources` `SourceDirectorySet`s:
 
 <div class="multi-language-sample" data-lang="groovy">
 <div class="sample" markdown="1" theme="idea" mode='groovy'>
@@ -949,8 +962,7 @@ kotlin {
 </div>
 </div>
 
-Likewise, if a multiplatform library is published in the experimental [Gradle metadata publishing mode](#experimental-metadata-publishing-mode) and the project 
-is set up to consume the metadata as well, then it is enough to specify a dependency only once, for the common source set. 
+Likewise, if a multiplatform library is [published with Gradle metadata](#metadata-publishing), it is enough to specify a dependency only once, for the common source set. 
 Otherwise, each platform-specific source set should be 
 provided with a corresponding platform module of the library, in addition to the common module, as shown above.
 
@@ -1098,7 +1110,7 @@ the tests for all targets.
 As the `commonTest` [default source set](#default-project-layout) is added to all test compilations, tests and test tools that are needed
 on all target platforms may be placed there.
 
-The [`kotlin.test` API](https://kotlinlang.org/api/latest/kotlin.test/index.html) is availble for multiplatform tests. 
+The [`kotlin.test` API](https://kotlinlang.org/api/latest/kotlin.test/index.html) is available for multiplatform tests. 
 Add the `kotlin-test-common` and `kotlin-test-annotations-common` dependencies to `commonTest` to use the assertion 
 functions like `kotlin.test.assertTrue(...)`  
 and `@Test`/`@Ignore`/`@BeforeTest`/`@AfterTest` annotations in the common tests.
@@ -1282,23 +1294,22 @@ kotlin {
 </div>
 </div>
 
-### Experimental metadata publishing mode
+<a name="experimental-metadata-publishing-mode">
+
+### Metadata publishing
 
 Gradle module metadata provides rich publishing and dependency resolution features that are used in Kotlin 
 multiplatform projects to simplify dependencies configuration for build authors. In particular, the publications of a 
-multiplatform library may include a special 'root' module that stands for the whole library and is automatically 
+multiplatform library include a special 'root' module that stands for the whole library and is automatically 
 resolved to the appropriate platform-specific artifacts when added as a dependency, as described below.
 
-In Gradle 5.3 and above, the module metadata is always used during dependency resolution, but publications don't 
+In Gradle 6.0 and above, the module metadata is always used during dependency resolution and included in publications.
+
+In earlier Gradle versions starting from 5.3, the module metadata is used during dependency resolution, but publications don't 
 include any module metadata by default. To enable module metadata publishing, add 
-`enableFeaturePreview("GRADLE_METADATA")` to the root project's `settings.gradle` file. With older Gradle versions, 
-this is also required for module metadata consumption.
+`enableFeaturePreview("GRADLE_METADATA")` to the root project's `settings.gradle` file. 
 
-> Note that the module metadata published by Gradle 5.3 and above cannot be read by Gradle versions older
-> than 5.3. 
-{:.note}
-
-With Gradle metadata enabled, an additional 'root' publication named `kotlinMultiplatform` is added to the project's 
+When publications include module metadata, an additional 'root' publication named `kotlinMultiplatform` is added to the project's 
 publications. The default artifact ID of this publication matches the project name without any additional suffix. 
 To configure this publication, access it via the `publishing { ... }` DSL of the `maven-publish` plugin:
 
@@ -1393,9 +1404,6 @@ kotlin {
 
 </div>
 </div>
-
-This requires that the consumer's Gradle build can read Gradle module metadata, either using Gradle 5.3+ or explicitly 
-enabling it by `enableFeaturePreview("GRADLE_METADATA")` in `settings.gradle`. 
 
 ### Disambiguating targets
 
@@ -1721,6 +1729,74 @@ It is important to note that some of the [Kotlin/Native targets](#supported-plat
 A target that is not supported by the current host is ignored during build and therefore not published. A library author may want to set up
 builds and publishing from different hosts as required by the library target platforms.
 
+### Target shortcuts
+
+Some native targets are often created together and use the same sources. For example, building for an iOS device and a simulator
+is represented by different targets (`iosArm64` and `iosX64` respectively) but their source codes are usually the same.
+A canonical way to express such shared code in the multiplatform project model is creating an intermediate
+source set (`iosMain`) and configuring links between it and the platform source sets:
+
+<div class="multi-language-sample" data-lang="groovy">
+<div class="sample" markdown="1" theme="idea" mode='groovy'>
+
+```groovy
+sourceSets{
+    iosMain {
+        dependsOn(commonMain)
+        iosDeviceMain.dependsOn(it)
+        iosSimulatorMain.dependsOn(it)
+    }
+}
+```
+
+</div>
+</div>
+
+<div class="multi-language-sample" data-lang="kotlin">
+<div class="sample" markdown="1" theme="idea" mode='kotlin' data-highlight-only>
+
+```kotlin
+val commonMain by sourceSets.getting
+val iosDeviceMain by sourceSets.getting
+val iosSimulatorMain by sourceSets.getting
+
+val iosMain by sourceSets.creating {
+    dependsOn(commonMain)
+    iosDeviceMain.dependsOn(this)
+    iosSimulatorMain.dependsOn(this)
+}
+```
+
+</div>
+</div>
+
+Since 1.3.60, the `kotlin-multiplaform` plugin provides shortcuts that automate such a configuration: they let users
+create a group of targets along with a common source set for them with a single DSL method.
+
+The following shortcuts are available:
+
+ * `ios` creates targets for `iosArm64` and `iosX64`.
+ * `watchos` creates targets for  `watchosArm32`, `watchosArm64`, and `watchosX86`.
+ * `tvos` creates targets for  `tvosArm64` and `tvosX64`. 
+
+<div class="sample" markdown="1" theme="idea" mode='kotlin' data-highlight-only>
+
+```kotlin
+// Create two targets for iOS.
+// Create common source sets: iosMain and iosTest.
+ios {
+    // Configure targets.
+    // Note: this lambda will be called for each target.
+}
+
+// You can also specify a name prefix for created targets.
+// Common source sets will also have this prefix:
+// anotherIosMain and anotherIosTest.
+ios("anotherIos")
+```
+
+</div>
+
 ### Building final native binaries
 
 By default, a Kotlin/Native target is compiled down to a `*.klib` library artifact, which can be consumed by Kotlin/Native itself as a
@@ -1742,7 +1818,7 @@ all native platforms):
 |`test`       |a test executable       |all native targets| 
 |`sharedLib`  |a shared native library |all native targets except `wasm32`|
 |`staticLib`  |a static native library  |all native targets except `wasm32`|
-|`framework`  |an Objective-C framework |macOS and iOS targets only|
+|`framework`  |an Objective-C framework |macOS, iOS, watchOS, and tvOS targets only|
 
 Each factory method exists in several versions. Consider them by example of the `executable` method. All the same versions are available
 for all other factory methods. 
@@ -1945,7 +2021,7 @@ binaries.findExecutable("foo", DEBUG)
 </div>
 </div>
 
-> Note: Before 1.3.40, both test and product executables were represented by the same binary type. Thus to access the default test binary created by the plugin, the following line was used:
+> Before 1.3.40, both test and product executables were represented by the same binary type. Thus to access the default test binary created by the plugin, the following line was used:
 > ```
 > binaries.getExecutable("test", "DEBUG")
 > ``` 
@@ -1962,7 +2038,7 @@ Binaries have a set of properties allowing one to configure them. The following 
 
  - **Compilation.** Each binary is built on basis of some compilation available in the same target. The default value of this parameter depends
  on the binary type: `Test` binaries are based on the `test` compilation while other binaries - on the `main` compilation.
- - **Linker options.** Options passed to a system linker during binary building. One can use this setting to link against some native library.
+ - **Linker options.** Options passed to a system linker during binary building. One can use this setting for linking against some native library.
  - **Output file name.** By default the output file name is based on binary name prefix or, if the name prefix isn't specified, on a project name.
  But it's possible to configure the output file name independently using the `baseName` property. Note that final file name will be formed
  by adding system-dependent prefix and postfix to this base name. E.g. a `libfoo.so` is produced for a Linux shared library with the base name `foo`.
@@ -2057,11 +2133,11 @@ binaries {
 </div>
 </div>
 
-#### Exporting dependencies in frameworks
+#### Exporting dependencies to binaries
 
-When building an Objective-C framework, it is often necessary to pack not just the classes of the current project,
-but also the classes of some of its dependencies. The Binaries DSL allows one to specify which dependencies will be exported
-in the framework using the `export` method.  Note that only API dependencies of a corresponding source set can be exported.
+When building an Objective-C framework or a native library (shared or static), it is often necessary to pack not just the
+classes of the current project, but also the classes of some of its dependencies. The Binaries DSL allows one to specify
+which dependencies will be exported to a binary using the `export` method. Note that only API dependencies of a corresponding source set can be exported.
 
 <div class="multi-language-sample" data-lang="groovy">
 <div class="sample" markdown="1" theme="idea" mode='groovy'>
@@ -2070,11 +2146,11 @@ in the framework using the `export` method.  Note that only API dependencies of 
 kotlin {
     sourceSets {
         macosMain.dependencies {
-            // Will be exported in the framework.
+            // Will be exported.
             api project(':dependency')
             api 'org.example:exported-library:1.0'
 
-            // Will not be exported in the framework.
+            // Will not be exported.
             api 'org.example:not-exported-library:1.0'
         }
     }
@@ -2083,6 +2159,11 @@ kotlin {
         framework {
             export project(':dependency')
             export 'org.example:exported-library:1.0'
+        }
+
+        sharedLib {
+            // It's possible to export different sets of dependencies to different binaries.
+            export project(':dependency')
         }
     }
 }
@@ -2098,11 +2179,11 @@ kotlin {
 kotlin {
     sourceSets {
         macosMain.dependencies {
-            // Will be exported in the framework.
+            // Will be exported.
             api(project(":dependency"))
             api("org.example:exported-library:1.0")
 
-            // Will not be exported in the framework.
+            // Will not be exported.
             api("org.example:not-exported-library:1.0")
         }
     }
@@ -2111,6 +2192,11 @@ kotlin {
         framework {
             export(project(":dependency"))
             export("org.example:exported-library:1.0")
+        }
+
+        sharedLib {
+            // It's possible to export different sets of dependencies to different binaries.
+            export(project(':dependency'))
         }
     }
 }
@@ -2124,7 +2210,7 @@ should be either a platform one (e.g. `kotlinx-coroutines-core-native_debug_maco
 or be exported transitively (see below).
 
 By default, export works non-transitively. If a library `foo` depending on library `bar` is exported, only methods of `foo` will
-be added in the output framework. This behaviour can by changed by the `transitiveExport` flag.
+be added in the output framework. This behaviour can be changed by the `transitiveExport` flag.
 
 <div class="multi-language-sample" data-lang="groovy">
 <div class="sample" markdown="1" theme="idea" mode='groovy'>

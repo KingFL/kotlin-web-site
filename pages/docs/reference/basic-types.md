@@ -26,7 +26,7 @@ For integer numbers, there are four types with different sizes and, hence, value
 
 All variables initialized with integer values not exceeding the maximum value of `Int`
 have the inferred type `Int`. If the initial value exceeds this value, then the type is `Long`.
-To specify the `Long` value explicitly, append the suffix `l` or `L` to the value.
+To specify the `Long` value explicitly, append the suffix `L` to the value.
 
 <div class="sample" markdown="1" theme="idea" data-highlight-only>
 
@@ -52,7 +52,7 @@ floating point types differ by their _decimal place_, that is, how many decimal 
   
 For variables initialized with fractional numbers, the compiler infers the `Double` type.
 To explicitly specify the `Float` type for a value, add the suffix `f` or `F`.
-If such a value contains more that 6-7 decimal digits, it will be rounded. 
+If such a value contains more than 6-7 decimal digits, it will be rounded. 
 
 <div class="sample" markdown="1" theme="idea" data-highlight-only>
 
@@ -131,11 +131,16 @@ Note that boxing of numbers does not necessarily preserve identity:
 ```kotlin
 fun main() {
 //sampleStart
-    val a: Int = 10000
-    println(a === a) // Prints 'true'
+    val a: Int = 100
     val boxedA: Int? = a
     val anotherBoxedA: Int? = a
-    println(boxedA === anotherBoxedA) // !!!Prints 'false'!!!
+    
+    val b: Int = 10000
+    val boxedB: Int? = b
+    val anotherBoxedB: Int? = b
+    
+    println(boxedA === anotherBoxedA) // true
+    println(boxedB === anotherBoxedB) // false
 //sampleEnd
 }
 ```
@@ -232,10 +237,61 @@ val l = 1L + 3 // Long + Int => Long
 
 ### Operations
 
-Kotlin supports the standard set of arithmetical operations over numbers, which are declared as members of appropriate classes (but the compiler optimizes the calls down to the corresponding instructions).
+Kotlin supports the standard set of arithmetical operations over numbers (`+` `-` `*` `/` `%`), which are declared 
+as members of appropriate classes (but the compiler optimizes the calls down to the corresponding instructions).
 See [Operator overloading](operator-overloading.html).
 
-As of bitwise operations, there're no special characters for them, but just named functions that can be called in infix form, for example:
+#### Division of integers
+
+Note that division between integers always returns an integer. Any fractional part is discarded. For example:
+
+<div class="sample" markdown="1" theme="idea">
+
+```kotlin
+fun main() {
+//sampleStart
+    val x = 5 / 2
+    //println(x == 2.5) // ERROR: Operator '==' cannot be applied to 'Int' and 'Double'
+    println(x == 2)
+//sampleEnd
+}
+```
+
+</div>
+
+This is true for a division between any two integer types.
+
+<div class="sample" markdown="1" theme="idea">
+
+```kotlin
+fun main() {
+//sampleStart
+    val x = 5L / 2
+    println(x == 2L)
+//sampleEnd
+}
+```
+
+</div>
+
+To return a floating-point type, explicitly convert one of the arguments to a floating-point type.
+
+<div class="sample" markdown="1" theme="idea">
+
+```kotlin
+fun main() {
+//sampleStart
+    val x = 5 / 2.toDouble()
+    println(x == 2.5)
+//sampleEnd
+}
+```
+
+</div>
+
+#### Bitwise operations 
+
+As for bitwise operations, there're no special characters for them, but just named functions that can be called in infix form, for example:
 
 <div class="sample" markdown="1" theme="idea" data-highlight-only>
 
@@ -396,7 +452,7 @@ val arr = IntArray(5) { 42 }
 
 // e.g. initialise the values in the array using a lambda
 // Array of int of size 5 with values [0, 1, 2, 3, 4] (values initialised to their index value)
-var arr = IntArray(5, { it * 1 }) 
+var arr = IntArray(5) { it * 1 } 
 ```
 
 </div>
@@ -468,8 +524,8 @@ The design of unsigned types is experimental, meaning that this feature is movin
 
 There are two possible ways to opt-in for unsigned types: with marking your API as experimental too, or without doing that.
 
-- to propagate experimentality, either annotate declarations which use unsigned integers with `@ExperimentalUnsignedTypes` or pass `-Xexperimental=kotlin.ExperimentalUnsignedTypes` to the compiler (note that the latter will make *all* declaration in compiled module experimental)
-- to opt-in without propagating experimentality, either annotate declarations with `@UseExperimental(ExperimentalUnsignedTypes::class)` or pass `-Xuse-experimental=kotlin.ExperimentalUnsignedTypes`
+- To propagate experimentality, annotate declarations that use unsigned integers with `@ExperimentalUnsignedTypes`.
+- To opt-in without propagating experimentality, either annotate declarations with `@OptIn(ExperimentalUnsignedTypes::class)` or pass `-Xopt-in=kotlin.ExperimentalUnsignedTypes` to the compiler.
 
 It's up to you to decide if your clients have to explicitly opt-in into usage of your API, but bear in mind that unsigned types are an experimental feature, so API which uses them can be suddenly broken due to changes in language. 
 

@@ -3,6 +3,8 @@ const path = require('path');
 const webpack = require('webpack');
 const ExtractCssPlugin = require('mini-css-extract-plugin');
 const CleanPlugin = require('clean-webpack-plugin');
+const svgToMiniDataURI = require('mini-svg-data-uri');
+const CssoWebpackPlugin = require('csso-webpack-plugin').default;
 
 module.exports = (params = {}) => {
   const isProduction = process.env.NODE_ENV === 'production';
@@ -23,11 +25,13 @@ module.exports = (params = {}) => {
       'videos': './static/js/page/videos.js',
       'grammar': './static/js/page/grammar.js',
       'community': './static/js/page/community/community.js',
+      'education': './static/js/page/education/education.js',
       'pdf': './static/js/page/pdf.js',
       'api': './static/js/page/api/api.js',
       'reference': './static/js/page/reference.js',
       'tutorial': './static/js/page/tutorial.js',
-      'styles': './static/css/styles.scss'
+      'styles': './static/css/styles.scss',
+      'styles-v2': './static/css/styles-v2.scss'
     },
 
     output: {
@@ -98,20 +102,38 @@ module.exports = (params = {}) => {
         {
           test: /\.svg/,
           use: [
-            'url-loader',
-            'svg-transform-loader'
-          ]
+            {
+              loader: 'url-loader',
+              options: {
+                limit: 10000,
+                encoding: 'utf8',
+                esModule: false,
+                generator: (content, mimetype, encoding) => svgToMiniDataURI(content.toString(encoding)),
+              },
+            },
+            {
+              loader: 'svgo-loader',
+              options: {
+                plugins: [
+                  {removeTitle: true},
+                  {convertPathData: false},
+                  {removeScriptElement:true}
+                ]
+              }
+            }
+          ],
         },
         {
           test: /\.(jpe?g|png|gif)$/,
           loader: 'url-loader',
           options: {
+            esModule: false,
             limit: 10000,
             name: '[path][name].[ext]'
           }
         },
         {
-          test: /\.(woff|ttf)$/,
+          test: /\.(woff2?|ttf)$/,
           loader: 'file-loader',
           options: {
             name: '[path][name].[ext]'
@@ -124,6 +146,9 @@ module.exports = (params = {}) => {
       new ExtractCssPlugin({
         filename: '[name].css'
       }),
+
+
+      process.env.NODE_ENV === 'production' &&  new CssoWebpackPlugin(),
 
       new webpack.ProvidePlugin({
         $: 'jquery',
@@ -138,7 +163,7 @@ module.exports = (params = {}) => {
         indexName: JSON.stringify(indexName),
         'process.env.NODE_ENV': JSON.stringify(env)
       })
-    ],
+    ].filter(Boolean),
 
     stats: 'minimal',
 

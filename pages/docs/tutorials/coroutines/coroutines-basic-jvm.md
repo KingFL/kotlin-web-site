@@ -27,7 +27,7 @@ Since we'll be using the [`kotlinx.coroutines`](https://github.com/Kotlin/kotlin
 ```groovy
 dependencies {
     ...
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:{{ site.data.releases.latest.coroutines.version }}"
 }
 ```
 
@@ -83,7 +83,7 @@ Since we'll be using the [`kotlinx.coroutines`](https://github.com/Kotlin/kotlin
     <dependency>
         <groupId>org.jetbrains.kotlinx</groupId>
         <artifactId>kotlinx-coroutines-core</artifactId>
-        <version>1.0.1</version>
+        <version>{{ site.data.releases.latest.coroutines.version }}</version>
     </dependency>
 </dependencies>
 ```
@@ -249,12 +249,12 @@ All these have already started, all we need is collect the results:
 <div class="sample" markdown="1" theme="idea" data-highlight-only>
 
 ```kotlin
-val sum = deferred.sumBy { it.await() }
+val sum = deferred.map { it.await().toLong() }.sum()
 ```
 
 </div>
 
-We simply take every coroutine and await its result here, then all results are added together by the standard library function `sumBy()`. But the compiler rightfully complains:
+We simply take every coroutine and await its result here, then all results are added together by the standard library function `sum()`. But the compiler rightfully complains:
 
 > Suspend functions are only allowed to be called from a coroutine or another suspend function
 
@@ -264,14 +264,14 @@ We simply take every coroutine and await its result here, then all results are a
 
 ```kotlin
 runBlocking {
-    val sum = deferred.sumBy { it.await() }
+    val sum = deferred.map { it.await().toLong() }.sum()
     println("Sum: $sum")
 }
 ```
 
 </div>
 
-Now it prints something sensible: `1784293664`, because all coroutines complete.
+Now it prints something sensible: `500000500000`, because all coroutines complete.
 
 Let's also make sure that our coroutines actually run in parallel. If we add a 1-second `delay()` to each of the `async`'s, the resulting program won't run for 1'000'000 seconds (over 11,5 days):
 
@@ -334,4 +334,4 @@ GlobalScope.async {
 
 </div>
 
-Our `workload()` function can be called from a coroutine (or another suspending function), but _can not_ be called from outside a coroutine. Naturally, `delay()` and `await()` that we used above are themselves declared as `suspend`, and this is why we had to put them inside `runBlocking {}`, `launch {}` or `async {}`.
+Our `workload()` function can be called from a coroutine (or another suspending function), but _cannot_ be called from outside a coroutine. Naturally, `delay()` and `await()` that we used above are themselves declared as `suspend`, and this is why we had to put them inside `runBlocking {}`, `launch {}` or `async {}`.
